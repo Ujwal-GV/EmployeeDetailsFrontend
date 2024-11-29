@@ -2,19 +2,23 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
 import { axiosInstance } from '../utils/axiosInstance';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
 export default function Login() {
     const [userName, setUserName] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [visible, setVisible] = useState(false);
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log("Login Payload:", { userName, password }); 
+        setLoading(true);
         try {
             const res = await axiosInstance.post('/api/admin/login', { userName, password });
             if (res.data.token) {
+                setLoading(false);
                 Cookies.set('name', userName);
                 localStorage.setItem('token', res.data.token);
                 navigate('/main');
@@ -34,17 +38,23 @@ export default function Login() {
                 setError('Error in setting up request');
             }
             console.error('Error logging in', error);
+        } finally {
+            setLoading(false);
         }
     };
 
+    const handleVisibility = () => {
+        setVisible(!visible);
+    }
+
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-400">
+        <div className="min-h-screen flex items-center justify-center mx-4">
             <div className="bg-white shadow-lg rounded-lg w-full max-w-lg p-6 lg:max-w-md md:max-w-sm sm:w-full">
                 <div className="flex justify-center mb-6">
                     <img
                         src="/homeImage.png"
                         alt="logo"
-                        className="h-20 w-20 lg:h-6 lg:w-16 md:h-4 md:w-14 sm:h-12 sm:w-12"
+                        className="h-20 w-20 lg:h-20 lg:w-20 md:h-20 md:w-20 sm:h-12 sm:w-12"
                     />
                 </div>
                 <h1 className="text-2xl font-bold text-center text-gray-800">EMPLOYEE DETAILS</h1>
@@ -60,22 +70,26 @@ export default function Login() {
                             required
                         />
                     </div>
-                    <div className="mb-4">
+                    <div className="mb-4 relative">
                         <label className="block text-gray-700">Password</label>
                         <input
-                            type="password"
+                            type={visible ? "text" : "password"}
                             className="mt-1 block w-full px-3 py-2 bg-gray-50 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
                         />
+                        <span onClick={handleVisibility}>{visible ? <FaEye className='absolute bottom-3 right-3' /> : <FaEyeSlash className='absolute bottom-3 right-3' />}</span>
                     </div>
                     {error && <div className="text-red-500 text-sm mb-4">{error}</div>}
                     <button
                         type="submit"
-                        className="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition"
+                        className={`w-full bg-indigo-600 text-white py-2 px-4 rounded-lg transition ${
+                            loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-indigo-700'
+                        }`}
+                        disabled={loading}
                     >
-                        Login
+                        {loading ? 'Logging in....' : 'Login'}
                     </button>
                 </form>
                 <p className="mt-6 text-center text-gray-600">

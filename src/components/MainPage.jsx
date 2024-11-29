@@ -1,15 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import Container from 'react-bootstrap/Container';
-import Nav from 'react-bootstrap/Nav';
-import Navbar from 'react-bootstrap/Navbar';
-import Button from 'react-bootstrap/Button';
-import 'bootstrap/dist/css/bootstrap.min.css';
 import Cookies from 'js-cookie';
 import { useNavigate } from 'react-router-dom';
 
 export default function MainPage() {
   const navigate = useNavigate();
   const [cookie, setCookie] = useState('');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
     const name = Cookies.get('name');
@@ -27,38 +23,119 @@ export default function MainPage() {
   };
 
   return (
-    <div className="Container">
-      <Navbar expand="lg" className="bg-body-primary">
-        <Container fluid>
-          <Navbar.Brand href="/main">EMPLOYEE DETAILS</Navbar.Brand>
-          <Navbar.Toggle aria-controls="navbarScroll" />
-          <Navbar.Collapse id="navbarScroll">
-            <Nav className="me-auto my-2 my-lg-0" navbarScroll>
-              <Nav.Link href="/main">Home</Nav.Link>
-              <Nav.Link href="/employees">Employee List</Nav.Link>
-            </Nav>
+    <div className="min-h-screen bg-gray-100 relative">
+      <nav className="bg-gray-200 shadow-md w-full z-10 p-4">
+        <div className="container mx-auto flex justify-between items-center px-6 py-4">
+          <a
+            href="/main"
+            className="absolute left-4 text-xl font-bold text-gray-800 no-underline"
+          >
+            EMPLOYEE DETAILS
+          </a>
+
+          <div className="absolute right-3 hidden md:flex items-center space-x-8">
+            <a
+              href="/main"
+              className="text-gray-700 hover:text-indigo-600 font-medium no-underline transition"
+            >
+              Home
+            </a>
+            <a
+              href="/employees"
+              className="text-gray-700 hover:text-indigo-600 font-medium no-underline transition"
+            >
+              Employee List
+            </a>
+            <a
+              href="/create-employee"
+              className="text-gray-700 hover:text-indigo-600 font-medium no-underline transition"
+            >
+              Create Employee
+            </a>
             {cookie && (
-              <Nav className="ms-auto my-2 my-lg-0 d-flex align-items-center">
-                <span className='m-2 p-2 text-center bg-black text-color-white rounded' style={{ color: "white", fontFamily: "cursive" }}>
+              <>
+                <span className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm">
                   {cookie}
                 </span>
-                <Button variant="danger" onClick={handleLogout}>
+                <button
+                  onClick={handleLogout}
+                  className="bg-red-500 hover:bg-red-600 text-white px-4 py-1 rounded-lg transition"
+                >
                   Logout
-                </Button>
-              </Nav>
+                </button>
+              </>
             )}
-          </Navbar.Collapse>
-        </Container>
-      </Navbar>
-      {cookie && (
-        <Container className="text-center d-flex align-items-center flex-column justify-content-center" style={{ marginTop: "5%" }}>
-          <Container className="text-center">
-            <h2>Welcome to Dashboard</h2>
-            <Button variant="primary" href="/create-employee" className="mt-3">
+          </div>
+
+          <button
+            className="absolute right-7 md:hidden text-2xl font-bold text-gray-800 focus:outline-none"
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          >
+            ☰
+          </button>
+        </div>
+      </nav>
+
+      <div
+        className={`fixed top-0 left-0 h-full bg-white shadow-lg z-20 transform ${
+          isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        } transition-transform duration-300 md:hidden`}
+      >
+        <div className="flex flex-col items-start p-6 space-y-6">
+          <a
+            href="/main"
+            className="text-gray-700 hover:text-indigo-600 font-medium no-underline transition"
+            onClick={() => setIsSidebarOpen(false)}
+          >
+            Home
+          </a>
+          <a
+            href="/employees"
+            className="text-gray-700 hover:text-indigo-600 font-medium no-underline transition"
+            onClick={() => setIsSidebarOpen(false)}
+          >
+            Employee List
+          </a>
+          <a
+              href="/create-employee"
+              className="text-gray-700 hover:text-indigo-600 font-medium no-underline transition"
+            >
               Create Employee
-            </Button>
-          </Container>
-        </Container>
+            </a>
+          {cookie && (
+            <>
+              <span className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm">
+                {cookie}
+              </span>
+              <button
+                onClick={() => {
+                  handleLogout();
+                  setIsSidebarOpen(false);
+                }}
+                className="bg-red-500 hover:bg-red-600 text-white px-4 py-1 rounded-lg transition"
+              >
+                Logout
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+
+      {cookie && (
+        <div className="flex flex-col items-center justify-center mt-24 px-6 text-center">
+          <h2 className="text-3xl font-semibold text-gray-800">
+            Welcome to the Dashboard
+          </h2>
+          <p className="mt-4 text-gray-600">
+            Manage employees and explore features.
+          </p>
+          <a
+            href="/create-employee"
+            className="mt-6 bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-6 rounded-lg text-lg transition shadow-md no-underline"
+          >
+            Create Employee
+          </a>
+        </div>
       )}
     </div>
   );

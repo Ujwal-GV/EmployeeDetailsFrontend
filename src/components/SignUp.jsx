@@ -1,40 +1,30 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import {
-    MDBBtn,
-    MDBContainer,
-    MDBCard,
-    MDBCardBody,
-    MDBCardImage,
-    MDBRow,
-    MDBCol,
-    MDBIcon,
-    MDBInput
-}
-from 'mdb-react-ui-kit';
 import { axiosInstance } from '../utils/axiosInstance';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
 export default function SignUp() {
-    const [password, setPassword] = useState('');
     const [userName, setUserName] = useState('');
+    const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [visible, setVisible] = useState(false);
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setLoading(true);
         try {
-        const res = await axiosInstance.post('/api/admin/signup', { userName, password });
-        if (res.status === 201 || 200) {
-            localStorage.setItem('token', res.data.token);
-            navigate('/main');
-        }
+            const res = await axiosInstance.post('/api/admin/signup', { userName, password });
+            if (res.status === 201 || res.status === 200) {
+                setLoading(false);
+                localStorage.setItem('token', res.data.token);
+                navigate('/main');
+            }
         } catch (error) {
-            if(error.response){
-                console.log(error.response)
-                if(error.response.status === 400 || 401){
-                    setError("Admin already exists");
-                    navigate('/signup');
+            if (error.response) {
+                if (error.response.status === 400 || 401) {
+                    setError('Admin already exists');
                 } else if (error.response.status === 500) {
                     setError('Server error, please try again later');
                 } else {
@@ -45,44 +35,68 @@ export default function SignUp() {
             } else {
                 setError('Error in setting up request');
             }
-        console.error('Error signing up', error);
+            console.error('Error signing up', error);
+        } finally {
+            setLoading(false);
         }
     };
 
+    const handleVisibility = () => {
+        setVisible(!visible);
+    }
+
     return (
-        <MDBContainer className="my-5">
-        <form onSubmit={handleSubmit}>
-        <MDBCard>
-            <MDBRow className='g-0'>
-
-            <MDBCol md='6'>
-                <MDBCardImage src='/homeImage.png' alt="login form" className='rounded-start w-75 mx-5 p-5' />
-            </MDBCol>
-
-            <MDBCol md='6'>
-                <MDBCardBody className='d-flex flex-column'>
-
-                <div className='d-flex flex-row mt-2'>
-                    <MDBIcon fas icon="cubes fa-3x me-3" style={{ color: '#ff6219' }}/>
-                    <span className="h1 fw-bold mb-0">EMPLOYEE DETAILS</span>
+        <div className="min-h-screen flex items-center justify-center mx-4">
+            <div className="bg-white shadow-lg rounded-lg w-full max-w-lg p-6 lg:max-w-md md:max-w-sm sm:w-full">
+                <div className="flex justify-center mb-6">
+                    <img
+                        src="/homeImage.png"
+                        alt="logo"
+                        className="h-20 w-20 lg:h-20 lg:w-20 md:h-20 md:w-20 sm:h-12 sm:w-12"
+                    />
                 </div>
-
-                <h5 className="fw-normal my-4 pb-3" style={{letterSpacing: '1px'}}>Sign up your account</h5>
-
-                    <MDBInput wrapperClass='mb-4' label='User Name' id='formControlLg' type='text' size="lg" value={userName} onChange={(e) => setUserName(e.target.value)} />
-                    <MDBInput wrapperClass='mb-4' label='Password' id='formControlLg' type='password' size="lg" value={password} onChange={(e) => setPassword(e.target.value)} />
-
-                    {error && <div style={{ color: 'red', marginBottom: '10px' }}>{error}</div>}
-
-                <MDBBtn className="mb-4 px-5" color='dark' size='lg' type='submit'>Register</MDBBtn>
-                <p className="mb-5 pb-lg-2" style={{color: '#393f81'}}>Already registered? <a href="/" style={{color: '#393f81'}}>Login here</a></p>
-
-                </MDBCardBody>
-            </MDBCol>
-
-            </MDBRow>
-        </MDBCard>
-        </form>
-    </MDBContainer>
+                <h1 className="text-2xl font-bold text-center text-gray-800">EMPLOYEE DETAILS</h1>
+                <p className="mt-2 text-center text-gray-600">Sign up for an account</p>
+                <form onSubmit={handleSubmit} className="mt-6">
+                    <div className="mb-4">
+                        <label className="block text-gray-700">Username</label>
+                        <input
+                            type="text"
+                            className="mt-1 block w-full px-3 py-2 bg-gray-50 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                            value={userName}
+                            onChange={(e) => setUserName(e.target.value)}
+                            required
+                        />
+                    </div>
+                    <div className="mb-4 relative">
+                        <label className="block text-gray-700">Password</label>
+                        <input
+                            type={visible ? "text" : "password"}
+                            className="mt-1 block w-full px-3 py-2 bg-gray-50 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                        />
+                        <span onClick={handleVisibility}>{visible ? <FaEye className='absolute bottom-3 right-3' /> : <FaEyeSlash className='absolute bottom-3 right-3' />}</span>
+                    </div>
+                    {error && <div className="text-red-500 text-sm mb-4">{error}</div>}
+                    <button
+                        type="submit"
+                        className={`w-full bg-indigo-600 text-white py-2 px-4 rounded-lg transition ${
+                            loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-indigo-700'
+                        }`}
+                        disabled={loading}
+                    >
+                        {loading ? 'Registering....' : 'Register'}
+                    </button>
+                </form>
+                <p className="mt-6 text-center text-gray-600">
+                    Already have an account?{' '}
+                    <a href="/" className="text-indigo-600 hover:underline">
+                        Login here
+                    </a>
+                </p>
+            </div>
+        </div>
     );
 }

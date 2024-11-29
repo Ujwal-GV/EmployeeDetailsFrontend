@@ -1,11 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
-import Container from 'react-bootstrap/Container';
-import Form from 'react-bootstrap/Form';
-import Cookies from 'js-cookie';
-import Button from 'react-bootstrap/Button';
 import { axiosInstance } from '../utils/axiosInstance';
+import Cookies from 'js-cookie';
 
 export default function EditEmployee() {
   const [f_name, setName] = useState('');
@@ -18,6 +15,7 @@ export default function EditEmployee() {
   const [existingImage, setExistingImage] = useState('');
   const [cookie, setCookie] = useState('');
   const navigate = useNavigate();
+  const [updating, setUpdating] = useState(false);
   const { id } = useParams();
 
   useEffect(() => {
@@ -58,7 +56,6 @@ export default function EditEmployee() {
     }
   }, []);
 
-  // Handler to update selected courses
   const handleCourseChange = (e) => {
     const value = e.target.value;
     if (e.target.checked) {
@@ -70,7 +67,6 @@ export default function EditEmployee() {
 
   const submitHandler = async (e) => {
     e.preventDefault();
-
     const formData = new FormData();
     formData.append('f_name', f_name);
     formData.append('f_email', f_email);
@@ -79,118 +75,129 @@ export default function EditEmployee() {
     formData.append('f_gender', f_gender);
     formData.append('f_course', JSON.stringify(f_course));
     if (f_image instanceof File) {
-      formData.append('f_image', f_image); // New image to upload to Cloudinary
+      formData.append('f_image', f_image);
     } else {
-      formData.append('f_image', existingImage); // Existing Cloudinary image URL
+      formData.append('f_image', existingImage);
     }
-
+    setUpdating(true);
     try {
       await axiosInstance.put(`/api/employees/${id}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
+      setUpdating(false);
       navigate('/employees');
     } catch (error) {
       console.error('Error updating employee:', error.response ? error.response.data : error.message);
+    } finally {
+      setUpdating(false);
     }
   };
 
-  // Function to get selected courses display string
   const getSelectedCoursesDisplay = () => {
-    return f_course.join(', '); // Join array elements with a comma and space
+    return f_course.join(', ');
   };
 
   return (
-    <Container className="mt-4">
-      <h2>Edit Employee</h2>
-      <Form onSubmit={submitHandler}>
-        <Form.Group controlId="formName">
-          <Form.Label>Name</Form.Label>
-          <Form.Control type="text" value={f_name} onChange={(e) => setName(e.target.value)} />
-        </Form.Group>
-        <Form.Group controlId="formEmail" className="mt-3">
-          <Form.Label>Email</Form.Label>
-          <Form.Control type="email" value={f_email} onChange={(e) => setEmail(e.target.value)} />
-        </Form.Group>
-        <Form.Group controlId="formMobile" className="mt-3">
-          <Form.Label>Mobile</Form.Label>
-          <Form.Control type="text" value={f_mobile} onChange={(e) => setMobile(e.target.value)} />
-        </Form.Group>
-        <Form.Group controlId="formDesignation" className="mt-3">
-          <Form.Label>Designation</Form.Label>
-          <Form.Select value={f_designation} onChange={(e) => setDesignation(e.target.value)}>
+    <div className="max-w-4xl mx-auto mt-10 p-6 bg-white shadow-lg rounded-lg">
+      <h2 className="text-2xl font-bold mb-6">Edit Employee</h2>
+      <form onSubmit={submitHandler} className="space-y-6">
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Name:</label>
+          <input
+            type="text"
+            className="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm py-2 px-2"
+            value={f_name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Email:</label>
+          <input
+            type="email"
+            className="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm py-2 px-2"
+            value={f_email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Mobile:</label>
+          <input
+            type="text"
+            className="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm py-2 px-2"
+            value={f_mobile}
+            onChange={(e) => setMobile(e.target.value)}
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Designation:</label>
+          <select
+            className="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm py-3 px-3"
+            value={f_designation}
+            onChange={(e) => setDesignation(e.target.value)}
+          >
             <option value="">Select Designation</option>
             <option value="HR">HR</option>
             <option value="Manager">Manager</option>
-            <option value="Sales">Designer</option>
-          </Form.Select>
-        </Form.Group>
-        <Form.Group controlId="formGender" className="mt-3">
-          <Form.Label>Gender</Form.Label>
-          <div>
-            <Form.Check
-              type="radio"
-              label="Male"
-              value="Male"
-              checked={f_gender === 'Male'}
-              onChange={(e) => setGender(e.target.value)}
-              inline
-            />
-            <Form.Check
-              type="radio"
-              label="Female"
-              value="Female"
-              checked={f_gender === 'Female'}
-              onChange={(e) => setGender(e.target.value)}
-              inline
-            />
+            <option value="Sales">Sales</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Gender:</label>
+          <div className="mt-1 space-x-4">
+            <label className="inline-flex items-center">
+              <input
+                type="radio"
+                className="form-radio text-indigo-600"
+                value="Male"
+                checked={f_gender === 'Male'}
+                onChange={(e) => setGender(e.target.value)}
+              />
+              <span className="ml-2">Male</span>
+            </label>
+            <label className="inline-flex items-center">
+              <input
+                type="radio"
+                className="form-radio text-indigo-600"
+                value="Female"
+                checked={f_gender === 'Female'}
+                onChange={(e) => setGender(e.target.value)}
+              />
+              <span className="ml-2">Female</span>
+            </label>
           </div>
-        </Form.Group>
-        <Form.Group controlId="formCourse" className="mt-3">
-          <Form.Label>Course</Form.Label>
-          <div>
-            <Form.Check
-              type="checkbox"
-              label="MCA"
-              value="MCA"
-              checked={f_course.includes('MCA')}
-              onChange={handleCourseChange}
-              inline
-            />
-            <Form.Check
-              type="checkbox"
-              label="BCA"
-              value="BCA"
-              checked={f_course.includes('BCA')}
-              onChange={handleCourseChange}
-              inline
-            />
-            <Form.Check
-              type="checkbox"
-              label="BSC"
-              value="BSC"
-              checked={f_course.includes('BSC')}
-              onChange={handleCourseChange}
-              inline
-            />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Course:</label>
+          <div className="mt-1 space-y-2">
+            {['MCA', 'BCA', 'BSC'].map((course) => (
+              <label key={course} className="flex items-center">
+                <input
+                  type="checkbox"
+                  className="form-checkbox text-indigo-600"
+                  value={course}
+                  checked={f_course.includes(course)}
+                  onChange={handleCourseChange}
+                />
+                <span className="ml-2">{course}</span>
+              </label>
+            ))}
           </div>
-        </Form.Group>
-        <Form.Group controlId="formImage" className="mt-3">
-          <Form.Label>Image</Form.Label>
-          {existingImage && (
-            <div>
-              <img src={existingImage} alt="Employee" style={{ width: '100px', height: '100px' }} />
-            </div>
-          )}
-          <Form.Control type="file" onChange={(e) => setImage(e.target.files[0])} />
-        </Form.Group>
-        <Form.Group controlId="formSelectedCoursesDisplay" className="mt-3">
-          <Form.Label>Selected Courses</Form.Label>
-          <Form.Control type="text" readOnly value={getSelectedCoursesDisplay()} />
-        </Form.Group>
-        <Button variant="primary" type="submit" className="mt-3">
-          Update Employee
-        </Button>
-      </Form>
-    </Container>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Image:</label>
+          <input
+            type="file"
+            className="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm py-2 px-2"
+            onChange={(e) => setImage(e.target.files[0])}
+          />
+        </div>
+        <button
+          type="submit"
+          className={`w-full py-2 px-4 bg-indigo-600 transition ${updating ? 'opacity-50 cursor-not-allowed' : 'hover:bg-indigo-700'} text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-75`}
+        >
+          {updating ? "Updating...." : "Update Employee"}
+        </button>
+      </form>
+    </div>
   );
 }
