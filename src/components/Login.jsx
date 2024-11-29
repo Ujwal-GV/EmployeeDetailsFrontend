@@ -50,15 +50,17 @@ export default function Login() {
     return (
         <div className="min-h-screen flex items-center justify-center mx-4">
             <div className="bg-white shadow-lg rounded-lg w-full max-w-lg p-6 lg:max-w-md md:max-w-sm sm:w-full">
-                <div className="flex justify-center mb-6">
+                <div className="flex gap-8 justify-center mb-6">
                     <img
                         src="/homeImage.png"
                         alt="logo"
-                        className="h-20 w-20 lg:h-20 lg:w-20 md:h-20 md:w-20 sm:h-12 sm:w-12"
+                        className="h-23 w-20 lg:h-20 lg:w-30 md:h-30 md:w-30"
                     />
+                    <div className='mt-3 lg:mt-7 md:mt-7'>
+                        <h1 className="text-2xl font-bold text-center text-gray-800">EMPLOYEE DETAILS</h1>
+                        <p className="mt-2 text-center text-gray-600">Sign into your account</p>
+                    </div>
                 </div>
-                <h1 className="text-2xl font-bold text-center text-gray-800">EMPLOYEE DETAILS</h1>
-                <p className="mt-2 text-center text-gray-600">Sign into your account</p>
                 <form onSubmit={handleSubmit} className="mt-6">
                     <div className="mb-4">
                         <label className="block text-gray-700">Username</label>
